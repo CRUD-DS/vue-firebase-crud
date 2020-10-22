@@ -1,32 +1,40 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>
+	<div id="app">
+		<table>
+			<tr>
+				<th v-for = "path in paths">
+					<router-link :to = "path.path">
+						{{path.name}}
+					</router-link>
+				</th>
+			</tr>
+		</table>
+		<router-view></router-view>
+		<Notification></Notification>
+	</div>
 </template>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
+import Notification from "./components/Notification";
+export default {
+	name: 'App',
+	components:{
+		Notification,
+	},
+	data(){
+		return {
+			paths:[
+			{
+				path: "/manual-products",
+				name: "Products"
+			},
+			],
+		}
+	},
+	mounted(){
+	},
+	methods:{
+	}
+};
+</script>
 
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
-</style>
