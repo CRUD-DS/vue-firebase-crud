@@ -28,6 +28,10 @@ export default {
 				path: "/manual-products",
 				name: "Products"
 			},
+			{
+				path: "/manual-products-low-read",
+				name: "Manual Products Lower Read",
+			}
 			],
 		}
 	},

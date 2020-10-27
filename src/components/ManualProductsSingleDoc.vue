@@ -18,7 +18,7 @@
 					<th>Description</th>
 					<td>
 						<textarea placeholder = "Description" type="text" v-model = "form.Description" :maxlength = "DescriptionMaxLength" :minlength = "DescriptionMinLength"></textarea>
-						<p v-if = "errorMsg.Description">{{errorMsg.Description}}</p>
+						<p v-if = "errorMsg.Name">{{errorMsg.Name}}</p>
 					</td>
 				</tr>
 				<tr>
@@ -73,10 +73,10 @@
 					</tr>
 				</thead>
 				<tbody id = "sortItems">
-					<tr v-for = "(item, index) in items" :id = "index">
-						<td>{{item.Name}}</td>
-						<td>{{item.Description}}</td>
-						<td>{{formatNum(item.Price, {dp: 2, currency: "USD"})}}</td>
+					<tr v-for = "ID in indices" :id = "ID">
+						<td>{{items[ID].Name}}</td>
+						<td>{{items[ID].Description}}</td>
+						<td>{{formatNum(items[ID].Price, {dp: 2, currency: "USD"})}}</td>
 					</tr>
 				</tbody>
 			</table>
@@ -97,16 +97,16 @@
 						<th>Actions</th>
 					</tr>
 				</thead>
-				<tbody>
-					<tr v-for = "item in items">
-						<td>{{item.Name}}</td>
-						<td>{{item.Description}}</td>
-						<td>{{formatNum(item.Price, {dp: 2, currency: "USD"})}}</td>
+				<tbody> 
+					<tr v-for = "ID in indices">
+						<td>{{items[ID].Name}}</td>
+						<td>{{items[ID].Description}}</td>
+						<td>{{formatNum(items[ID].Price, {dp: 2, currency: "USD"})}}</td>
 						<td>
-							<button @click = "duplicate(item)">Duplicate</button>
-							<button @click = "editStart(item)">Edit</button>
-							<button @click = "deleteItem(item)">Delete</button>
-							<button @click = "viewItem(item)">View</button>
+							<button @click = "duplicate(items[ID])">Duplicate</button>
+							<button @click = "editStart(items[ID], ID)">Edit</button>
+							<button @click = "deleteItem(ID)">Delete</button>
+							<button @click = "viewItem(items[ID])">View</button>
 						</td>
 					</tr>
 				</tbody>
@@ -136,7 +136,9 @@ export default{
 				"Description": "",
 				"Price": ""
 			},
-			items: [],
+			oriItem: {},
+			items: {},
+			indices: [],
 			editID: "",
 
 			// RANGES
@@ -151,7 +153,13 @@ export default{
 		}
 	},
 	firestore(){
-		this.$binding("items", cdsDB.getCol("products").orderBy("cdsSortIndex"));
+		this.$binding("oriItem", cdsDB.getDoc("products", "single-doc"));
+	},
+	watch:{
+		"oriItem"(){
+			this.items = cdsCopier.copy(this.oriItem.Products || {});
+			this.indices = cdsCopier.copy(this.oriItem.ProductsIndices || []);
+		}
 	},
 	methods:{
 		// CANCEL
@@ -170,11 +178,7 @@ export default{
 		},
 		sortSubmit(){
 			let array = $("#sortItems").sortable("toArray");
-			let batch = cdsDB.db.batch();
-			this.items.forEach((item, itemIndex)=>{
-				batch.update(cdsDB.getDoc("products", item[".key"]), {cdsSortIndex: parseInt(array[itemIndex])});
-			})
-			batch.commit();
+			cdsDB.updateDoc("products", {ProductsIndices: array}, "single-doc");
 			this.cancel();
 		},
 		// VIEW
@@ -233,12 +237,17 @@ export default{
 			this.errorMsg = errorMsg;
 
 			if (!error){
+				let ID;
+				let update = {};
 				if (this.adding){
-					cdsDB.setDoc("products", form);
+					ID = cdsDB.genID();
+					update["ProductsIndices"] = cdsDB.fieldVal.arrayUnion(ID);
 				}
 				else if (this.editing){
-					cdsDB.updateDoc("products", form, this.editID);
+					ID = this.editID;
 				}
+				update["Products." + ID] = form;
+				cdsDB.updateDoc("products", update, "single-doc");
 				this.cancel();
 			}
 		},
@@ -260,7 +269,7 @@ export default{
 		},
 
 		// EDIT
-		editStart(item){
+		editStart(item, ID){
 			this.form = {
 				Name: item.Name,
 				Description: item.Description,
@@ -271,13 +280,16 @@ export default{
 				Description: "",
 				Price: ""
 			};
-			this.editID = item[".key"];
+			this.editID = ID;
 			this.editing = true;
 		},
 
 		// DELETE
-		deleteItem(item){
-			cdsDB.deleteDoc("products", item[".key"]);
+		deleteItem(ID){
+			let update = {};
+			update["Products." + ID] = cdsDB.fieldVal.delete();
+			update["ProductsIndices"] = cdsDB.fieldVal.arrayRemove(ID);
+			cdsDB.updateDoc("products", update, "single-doc");
 		}
 	}
 };

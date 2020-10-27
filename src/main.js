@@ -6,6 +6,7 @@ import router from './router'					// ROUTER
 import VueFB from "vue-firestore"				// VUE FIRESTORE
 import VueModal from "vue-js-modal"				// MODAL
 import VueToasted from "vue-toasted"			// TOASTED
+import VueSortable from 'vue-sortable'			// SORTABLE
 import jQuery from "jquery"						// JQUERY
 
 // JS
@@ -23,6 +24,7 @@ import "./assets/css/style.css";
 Vue.use(VueFB);
 Vue.use(VueModal);
 Vue.use(VueToasted);
+Vue.use(VueSortable);
 global.cdsDB = cdsDB
 global.cdsCopier = cdsCopier;
 global.cdsDate = cdsDate;

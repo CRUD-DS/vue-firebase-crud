@@ -17,6 +17,14 @@ require("firebase/functions");
 //======================================================//
 // INSERT YOUR FIREBASE
 const firebaseApp = firebase.initializeApp({
+	"appId": "1:1090806120041:web:3a835f27e1573ccbd72cf8",
+	"authDomain": "coolest-project-bruv.firebaseapp.com",
+	"apiKey": "AIzaSyCddkiGYrONsdOcAYvw4Th57nwckd08Ab4",
+	"messagingSenderId": "1090806120041",
+	"storageBucket": "coolest-project-bruv.appspot.com",
+	"projectId": "coolest-project-bruv",
+	"measurementId": "G-TGS564F9RD",
+	"databaseURL": "https://coolest-project-bruv.firebaseio.com"
 })
 
 
